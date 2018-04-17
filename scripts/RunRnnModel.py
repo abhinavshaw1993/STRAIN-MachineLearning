@@ -42,7 +42,6 @@ class Strain(nn.Module):
 
         # since input_size_list contains a list of sizes of each feature, We initialize those many RNN cells, 1 for each feature.
         self.rnns = nn.ModuleList([nn.LSTM(input_size, hidden_dim, 1) for input_size in input_size_list])
-        self.batch_norm = nn.BatchNorm2d(len(input_size_list)*100)
         self.linear = nn.Linear(len(input_size_list)*100, num_classes)
 
     def forward(self, input_list, index_list):
@@ -60,7 +59,6 @@ class Strain(nn.Module):
             output_list.append(y_out)
 
         y_out = torch.cat(output_list, dim=1)
-        y_out = self.batch_norm(y_out)
         y_out = self.linear(y_out)
 
         return y_out
