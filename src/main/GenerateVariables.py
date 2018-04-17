@@ -37,7 +37,10 @@ def generate_variables(feature_list=[
         val_samples = math.floor(val_samples)
 
         # If want to truncate training data
-        feature_indices = raw_feature_train_y_indices[:min(restrict_seqlen, total_y_labels - val_samples)]
+        if restrict_seqlen != -1:
+            feature_indices = raw_feature_train_y_indices[:min(restrict_seqlen, total_y_labels - val_samples)]
+        else:
+            feature_indices = raw_feature_train_y_indices[:total_y_labels - val_samples]
 
         # Selecting new subset of data.
         last_idx = feature_indices.iloc[-1, 0]

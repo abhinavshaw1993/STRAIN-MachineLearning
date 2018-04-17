@@ -4,6 +4,7 @@ import main.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim
 import torch
+from sklearn.metrics import accuracy_score
 
 
 def get_inputs():
@@ -20,7 +21,7 @@ def get_inputs():
         "gps_details"]
 
     # Getting the input and generating respective sequences.
-    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list, restrict_seqlen=2,\
+    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list, restrict_seqlen=4,\
                                       is_cuda_available=torch.cuda.is_available())
 
     # return
@@ -51,10 +52,11 @@ def get_inputs():
 
 def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
     # Getting inputs.
-    input_list, input_size_list, index_list, target, val_input_list, val_index_list, pred_true = get_inputs()
+    input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true = get_inputs()
+    y_true = y_true.data.numpy()
 
-    print(val_index_list[0])
-    print(pred_true)
+    # Initializing Best_Accuracy as 0
+    best_accuracy = 0
 
     if not train:
         return
@@ -63,6 +65,7 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
     net = Strain(input_size_list=input_size_list)
     optimizer = optim.SGD(net.parameters(), 0.001)
     net.apply(weights_init)
+    val_soft = torch.nn.Softmax(dim=1)
 
     criterion = nn.CrossEntropyLoss(size_average=True)
 
@@ -73,6 +76,9 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
 
     # Train the network
     for epoch in range(epochs):
+
+        print("#########################################################")
+
         net.train(True)
         optimizer.zero_grad()
         y_hat = net.forward(input_list, index_list)
@@ -80,15 +86,32 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
         loss.backward()
         optimizer.step()
 
+        ######################## Validating ########################
+
         net.eval()
         y_pred = net.forward(val_input_list, val_index_list)
-        print(y_pred)
+        y_pred = val_soft(y_pred)
+        y_pred = y_pred.data.numpy().argmax(axis=1)
+
+
+        accuracy = accuracy_score(y_true, y_pred)
+
+        if not best_accuracy:
+            is_best = True
+        elif accuracy > best_accuracy:
+            is_best = True
+        else:
+            is_best = False
 
         # generating states. Saving checkpoint after every epoch.
-        state = chck.create_state(net, optimizer, epoch, start_epoch, None)
-        chck.save_checkpoint(state, True)
+        state = chck.create_state(net, optimizer, epoch, start_epoch, accuracy)
+        chck.save_checkpoint(state, is_best)
 
-        print("=> loss of '{}' at epoch {}".format(loss.data[0], start_epoch+epoch+1))
+        print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch+epoch+1, accuracy))
+
+    print("#########################################################")
+    print("Best Accuracy :", best_accuracy)
+    print("#########################################################")
 
 
 if __name__ == "__main__":
