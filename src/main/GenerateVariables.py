@@ -17,7 +17,7 @@ def generate_variables(feature_list=[
     "gps_details"],
     restrict_seqlen=10,
     is_cuda_available=True,
-    val_set_size=0.1):
+    val_set_size=0.3):
 
 
     train_feature_dict = {}

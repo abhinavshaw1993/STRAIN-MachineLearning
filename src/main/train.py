@@ -7,7 +7,7 @@ import torch
 from sklearn.metrics import accuracy_score
 
 
-def get_inputs():
+def get_inputs(restrict_seqlen=5):
     # Set Cuda.
 
     feature_list = [
@@ -21,8 +21,9 @@ def get_inputs():
         "gps_details"]
 
     # Getting the input and generating respective sequences.
-    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list, restrict_seqlen=4,\
-                                      is_cuda_available=torch.cuda.is_available())
+    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list,\
+                                                              restrict_seqlen=restrict_seqlen,\
+                                                              is_cuda_available=torch.cuda.is_available())
 
     # return
     input_size_list = []
@@ -50,9 +51,10 @@ def get_inputs():
     return input_list, input_size_list, index_list, target, val_input_list, val_index_list, val_target
 
 
-def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
+def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=False, restrict_seqlen=4):
     # Getting inputs.
-    input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true = get_inputs()
+    input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
+    = get_inputs(restrict_seqlen=restrict_seqlen)
     y_true = y_true.data.numpy()
 
     # Initializing Best_Accuracy as 0
@@ -74,10 +76,13 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
         net.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
+    print("#########################################################")
+    print("Start Epoch :", start_epoch)
+
     # Train the network
     for epoch in range(epochs):
 
-        print("#########################################################")
+        print("###################### Epoch {} #######################".format(start_epoch+epoch+1))
 
         net.train(True)
         optimizer.zero_grad()
@@ -93,15 +98,24 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
         y_pred = val_soft(y_pred)
         y_pred = y_pred.data.numpy().argmax(axis=1)
 
-
         accuracy = accuracy_score(y_true, y_pred)
 
+        # print("best accuracy {} accuracy {}".format(best_accuracy, accuracy))
         if not best_accuracy:
             is_best = True
+            best_accuracy = accuracy
         elif accuracy > best_accuracy:
+            best_accuracy = accuracy
             is_best = True
         else:
             is_best = False
+
+        print("Y_pred {}".format(y_pred))
+        print("Y_true {}".format(y_true))
+        # force save model without it being the best accuracy.
+        if force_save_model:
+            is_best = True
+
 
         # generating states. Saving checkpoint after every epoch.
         state = chck.create_state(net, optimizer, epoch, start_epoch, accuracy)
@@ -113,6 +127,5 @@ def train(start_epoch=1, epochs=10, resume_frm_chck_pt=True, train=False):
     print("Best Accuracy :", best_accuracy)
     print("#########################################################")
 
-
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=2, train=True)
+    train(start_epoch=0, epochs=1, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=5)
