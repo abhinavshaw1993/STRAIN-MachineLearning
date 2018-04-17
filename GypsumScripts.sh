@@ -11,5 +11,9 @@
 
 # Log the jobid.
 echo $SLURM_JOBID - `hostname` >> ~/slurm-jobs.txt
-python ~/projects/STRAIN-MachineLearning/src/main/train.py
+
+# Chage Dir to SRC.
+cd ~/projects/STRAIN-MachineLearning/src
+
+python main/train.py
 
