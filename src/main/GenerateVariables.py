@@ -15,7 +15,7 @@ def generate_variables(feature_list=[
     "phonecharge_details",
     "phonelock_details",
     "gps_details"],
-    restrict_seqlen=10,
+    restrict_seqlen=-1,
     is_cuda_available=True,
     val_set_size=0.3):
 

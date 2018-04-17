@@ -60,6 +60,8 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     # Initializing Best_Accuracy as 0
     best_accuracy = 0
 
+    print("Force-Saving is set to {}".format(force_save_model))
+
     if not train:
         return
 
@@ -128,4 +130,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     print("#########################################################")
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=1, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=5)
+    train(start_epoch=0, epochs=1, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=-1)
