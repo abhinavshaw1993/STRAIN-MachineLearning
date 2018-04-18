@@ -76,6 +76,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
     if torch.cuda.is_available():
         net = net.cuda()
+        best_accuracy = best_accuracy.cuda()
 
     if resume_frm_chck_pt:
         model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint()
