@@ -55,7 +55,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     # Getting inputs.
     input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
     = get_inputs(restrict_seqlen=restrict_seqlen)
-    y_true = y_true.data.numpy()
+    y_true = y_true.data.cpu().numpy()
 
     # Initializing Best_Accuracy as 0
     best_accuracy = 0
@@ -98,7 +98,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         net.eval()
         y_pred = net.forward(val_input_list, val_index_list)
         y_pred = val_soft(y_pred)
-        y_pred = y_pred.data.numpy().argmax(axis=1)
+        y_pred = y_pred.data.cpu().numpy().argmax(axis=1)
 
         accuracy = accuracy_score(y_true, y_pred)
 

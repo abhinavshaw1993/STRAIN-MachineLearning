@@ -94,6 +94,7 @@ def generate_variables(feature_list=[
         val_indices = torch.from_numpy(np_feature_val_indices.reshape(-1))
 
         ############################# FInal Genereation ##################################
+
         if is_cuda_available:
             input_seq_tensor = input_seq_tensor.cuda()
             target_tensor = target_tensor.cuda()
