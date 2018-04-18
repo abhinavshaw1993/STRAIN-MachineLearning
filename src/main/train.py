@@ -3,8 +3,9 @@ from main.GenerateVariables import generate_variables
 import main.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim
+from torch.autograd import Variable
 import torch
-from sklearn.metrics import accuracy_score
+import numpy as np
 
 
 def get_inputs(restrict_seqlen=5):
@@ -21,8 +22,8 @@ def get_inputs(restrict_seqlen=5):
         "gps_details"]
 
     # Getting the input and generating respective sequences.
-    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list,\
-                                                              restrict_seqlen=restrict_seqlen,\
+    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list, \
+                                                              restrict_seqlen=restrict_seqlen, \
                                                               is_cuda_available=torch.cuda.is_available())
 
     # return
@@ -54,11 +55,11 @@ def get_inputs(restrict_seqlen=5):
 def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=False, restrict_seqlen=4):
     # Getting inputs.
     input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
-    = get_inputs(restrict_seqlen=restrict_seqlen)
-    y_true = y_true.data.cpu().numpy()
+        = get_inputs(restrict_seqlen=restrict_seqlen)
+    # y_true = y_true.data.cpu().numpy()
 
     # Initializing Best_Accuracy as 0
-    best_accuracy = 0
+    best_accuracy = Variable(torch.from_numpy(np.array([0])).float())
 
     print("Force-Saving is set to {}".format(force_save_model))
 
@@ -84,7 +85,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     # Train the network
     for epoch in range(epochs):
 
-        print("###################### Epoch {} #######################".format(start_epoch+epoch+1))
+        print("###################### Epoch {} #######################".format(start_epoch + epoch + 1))
 
         net.train(True)
         optimizer.zero_grad()
@@ -98,36 +99,43 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         net.eval()
         y_pred = net.forward(val_input_list, val_index_list)
         y_pred = val_soft(y_pred)
-        y_pred = y_pred.data.cpu().numpy().argmax(axis=1)
 
-        accuracy = accuracy_score(y_true, y_pred)
+        # y_pred = y_pred.data.numpy().argmax(axis=1)
+        # accuracy = accuracy_score(y_true, y_pred)
 
+        _, y_pred = y_pred.max(1)
+        accuracy = y_true.eq(y_pred).sum()
+        accuracy = accuracy.float() / len(y_true)
+
+        # print(type(accuracy), type(best_accuracy))
         # print("best accuracy {} accuracy {}".format(best_accuracy, accuracy))
-        if not best_accuracy:
+
+        if (best_accuracy > 0).all():
             is_best = True
             best_accuracy = accuracy
-        elif accuracy > best_accuracy:
+        elif torch.gt(accuracy, best_accuracy).all():
             best_accuracy = accuracy
             is_best = True
         else:
             is_best = False
 
-        print("Y_pred {}".format(y_pred))
-        print("Y_true {}".format(y_true))
+        # print("Y_pred {}".format(y_pred))
+        # print("Y_true {}".format(y_true))
+
         # force save model without it being the best accuracy.
         if force_save_model:
             is_best = True
-
 
         # generating states. Saving checkpoint after every epoch.
         state = chck.create_state(net, optimizer, epoch, start_epoch, accuracy)
         chck.save_checkpoint(state, is_best)
 
-        print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch+epoch+1, accuracy))
+        print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch + epoch + 1, accuracy))
 
     print("#########################################################")
     print("Best Accuracy :", best_accuracy)
     print("#########################################################")
 
+
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=1, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=2)
+    train(start_epoch=0, epochs=5, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=5)
