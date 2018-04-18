@@ -33,6 +33,7 @@ def generate_variables(feature_list=[
 
         # splitting data into test and train splits. Keeping 30% of labels for Val.
         total_y_labels = len(raw_feature_train_y_indices)
+        print("Total Len:", total_y_labels)
         val_samples = total_y_labels * val_set_size
         val_samples = math.floor(val_samples)
 

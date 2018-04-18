@@ -56,7 +56,6 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     # Getting inputs.
     input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
         = get_inputs(restrict_seqlen=restrict_seqlen)
-    # y_true = y_true.data.cpu().numpy()
 
     # Initializing Best_Accuracy as 0
     best_accuracy = Variable(torch.from_numpy(np.array([0])).float())
@@ -114,10 +113,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         # print(type(accuracy), type(best_accuracy))
         # print("best accuracy {} accuracy {}".format(best_accuracy, accuracy))
 
-        if (best_accuracy > 0).all():
-            is_best = True
-            best_accuracy = accuracy
-        elif torch.gt(accuracy, best_accuracy).all():
+        if torch.gt(accuracy, best_accuracy).all():
             best_accuracy = accuracy
             is_best = True
         else:
@@ -142,4 +138,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=5, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=5)
+    train(start_epoch=0, epochs=10, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=5)
