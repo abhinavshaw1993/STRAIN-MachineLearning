@@ -74,6 +74,9 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
     criterion = nn.CrossEntropyLoss(size_average=True)
 
+    if torch.cuda.is_available():
+        net = net.cuda()
+
     if resume_frm_chck_pt:
         model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint()
         net.load_state_dict(model_state)

@@ -23,6 +23,7 @@ class Strain(nn.Module):
         output_list = []
 
         for idx, indices in enumerate(index_list):
+            self.rnns[idx].flatten_parameters()
             y_out, _ = self.rnns[idx](input_list[idx])
             y_out = torch.index_select(y_out, 0, index_list[idx])
             y_out = y_out.view(y_out.shape[0], -1)
