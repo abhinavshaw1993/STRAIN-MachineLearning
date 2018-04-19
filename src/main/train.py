@@ -139,4 +139,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=25, resume_frm_chck_pt=True, force_save_model=True, restrict_seqlen=-1)
+    train(start_epoch=0, epochs=25, resume_frm_chck_pt=False, force_save_model=True, restrict_seqlen=-1)

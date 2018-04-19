@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 from torch.autograd import Variable
 import math
+from sklearn.preprocessing import normalize
 import numpy as np
 
 
@@ -27,13 +28,16 @@ def generate_variables(feature_list=[
 
         # Read CSV and skip the time columns.
         raw_feature_train_x = pd.read_csv("Data/" + feature + "_train_x.csv", skip_blank_lines=False).iloc[:, 1:]
+        # Normalizing raw_features.
+        raw_feature_train_x = normalize(raw_feature_train_x.as_matrix())
+        raw_feature_train_x = pd.DataFrame(raw_feature_train_x)
         raw_feature_train_y = pd.read_csv("Data/" + feature + "_train_y.csv", skip_blank_lines=False)
         raw_feature_train_y["stress_level"] += -1
         raw_feature_train_y_indices = pd.read_csv("Data/" + feature + "_train_y_indices.csv", skip_blank_lines=False)
 
         # splitting data into test and train splits. Keeping 30% of labels for Val.
         total_y_labels = len(raw_feature_train_y_indices)
-        print("Total Len:", total_y_labels)
+        # print("Total Len:", total_y_labels)
         val_samples = total_y_labels * val_set_size
         val_samples = math.floor(val_samples)
 
