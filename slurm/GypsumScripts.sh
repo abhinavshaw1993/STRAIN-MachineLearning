@@ -5,7 +5,7 @@
 #SBATCH --partition=m40-short
 #SBATCH --output=STRAIN-custom-%A.out
 #SBATCH --error=STRAIN-custom-%A.err
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=abhinavshaw@umass.edu
 
