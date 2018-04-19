@@ -74,6 +74,10 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
     criterion = nn.CrossEntropyLoss(size_average=True)
 
+    if torch.cuda.device_count() > 1:
+        print("Using {} GPUs".format(torch.cuda.device_count()))
+        net = nn.DataParallel(net)
+
     if torch.cuda.is_available():
         net = net.cuda()
         best_accuracy = best_accuracy.cuda()
@@ -139,4 +143,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=25, resume_frm_chck_pt=False, force_save_model=True, restrict_seqlen=-1)
+    train(start_epoch=0, epochs=1, resume_frm_chck_pt=False, force_save_model=True, restrict_seqlen=-1)
