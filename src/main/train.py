@@ -80,6 +80,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         net = nn.DataParallel(net)
 
     if torch.cuda.is_available():
+        print("Training on GPU")
         net = net.cuda()
         best_accuracy = best_accuracy.cuda()
 
