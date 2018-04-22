@@ -68,9 +68,8 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
     # declaring Network.
     net = Strain(input_size_list=input_size_list)
-    # optimizer = optim.SGD(net.parameters(), 0.001)
     # Using default learning rate for adadelta.
-    optimizer = optim.Adadelta(net.parameters())
+    optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
     net.apply(weights_init)
     val_soft = torch.nn.Softmax(dim=1)
 
@@ -145,4 +144,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=100, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=-1)
+    train(start_epoch=0, epochs=25, resume_frm_chck_pt=False, force_save_model=True, restrict_seqlen=-1)
