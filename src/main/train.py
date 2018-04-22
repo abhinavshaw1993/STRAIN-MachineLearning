@@ -144,4 +144,4 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     print("#########################################################")
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=600, resume_frm_chck_pt=False, force_save_model=False, restrict_seqlen=-1)
+    train(start_epoch=0, epochs=200, resume_frm_chck_pt=True, force_save_model=False, restrict_seqlen=-1)
