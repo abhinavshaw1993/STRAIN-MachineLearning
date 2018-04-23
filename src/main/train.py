@@ -69,7 +69,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     # declaring Network.
     net = Strain(input_size_list=input_size_list)
     # Using default learning rate for adadelta.
-    optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
+    optimizer = optim.Adam(net.parameters(), weight_decay=0.015, lr=0.000001)
     net.apply(weights_init)
     val_soft = torch.nn.Softmax(dim=1)
 
@@ -87,7 +87,7 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
     if resume_frm_chck_pt:
         model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint()
         net.load_state_dict(model_state)
-        optimizer.load_state_dict(optimizer_state)
+        # optimizer.load_state_dict(optimizer_state)
 
     print("#########################################################")
     print("Start Epoch :", start_epoch)
