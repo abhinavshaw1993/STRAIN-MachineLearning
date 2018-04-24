@@ -6,39 +6,24 @@ import torch
 import os
 
 
-def save_checkpoint(state, is_best, file_name_rel='/output/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, full_file_name):
     # Save the check point if the model it best.
-    cwd = os.getcwd()
-    file_name_rel = cwd+file_name_rel
 
     if is_best:
         print("=> Saving a new best")
-        torch.save(state, file_name_rel)
+        torch.save(state, full_file_name)
     else:
         print("=> Validation Accuracy did not improve")
 
-def create_state(model, optimizer, epoch, start_epoch, best_accuracy):
-    # Static State list created for, epochs, model_weights, optimizer_state and best_accuracy.
-    state = {
-    'epoch':epoch + start_epoch + 1,
-    'model_state':model.state_dict(),
-    'optimizer_state':optimizer.state_dict(),
-    'best_accuracy':best_accuracy
-    }
 
-    return state
-
-
-def load_checkpoint(file_name_rel='/output/checkpoint.pth.tar'):
+def load_checkpoint(full_file_name):
     print("=> Loading Model from Checkpoint")
-    cwd = os.getcwd()
-    file_name_rel = cwd+file_name_rel
 
     # If GPU available, load on GPU.
     if torch.cuda.is_available:
-        state = torch.load(file_name_rel)
+        state = torch.load(full_file_name)
     else:
-        state = torch.load(file_name_rel,
+        state = torch.load(full_file_name,
                            map_location=lambda storage, loc: 'cpu')
 
     keys = state.keys()
@@ -57,4 +42,13 @@ def load_checkpoint(file_name_rel='/output/checkpoint.pth.tar'):
     return model_state, optimizer_state, start_epoch, best_accuracy
 
 
+def create_state(model, optimizer, epoch, start_epoch, best_accuracy):
+    # Static State list created for, epochs, model_weights, optimizer_state and best_accuracy.
+    state = {
+        'epoch': epoch + start_epoch + 1,
+        'model_state': model.state_dict(),
+        'optimizer_state': optimizer.state_dict(),
+        'best_accuracy': best_accuracy
+    }
 
+    return state

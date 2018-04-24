@@ -1,59 +1,24 @@
-from main.LSTM_log_reg_model import Strain, weights_init
-from main.GenerateVariables import generate_variables
-import main.checkpointing as chck
+from main.model.lstm_log_reg import Strain, weights_init
+from main.utils.get_inputs import get_inputs
+import main.utils.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 import torch
 import numpy as np
+import os
 
 
-def get_inputs(restrict_seqlen=5):
-    # Set Cuda.
+def train(start_epoch=0,
+          epochs=10,
+          resume_frm_chck_pt=True,
+          force_save_model=False,
+          reset_optimizer_state=False,
+          restrict_seqlen=4):
+    # getting current working directory initialize checkpoint file name.
+    cwd = os.getcwd()
+    file_name = cwd + '/output/log_reg.tar'
 
-    feature_list = [
-        "activity_details",
-        "sms_details",
-        "audio_details",
-        "conversation_details",
-        "dark_details",
-        "phonecharge_details",
-        "phonelock_details",
-        "gps_details"]
-
-    # Getting the input and generating respective sequences.
-    train_feature_dict, val_feature_dict = generate_variables(feature_list=feature_list,
-                                                              restrict_seqlen=restrict_seqlen,
-                                                              is_cuda_available=torch.cuda.is_available(),
-                                                              val_set_size=0.4)
-
-    # return
-    input_size_list = []
-    index_list = []
-    input_list = []
-    target = None
-
-    for key in train_feature_dict.keys():
-        input_seq, target, indices = train_feature_dict[key]
-        input_size_list.append(input_seq.shape[2])
-        input_list.append(input_seq)
-        index_list.append(indices)
-
-    ####################### Val Set ########################
-
-    val_index_list = []
-    val_input_list = []
-    val_target = None
-
-    for key in val_feature_dict.keys():
-        val_input_seq, val_target, val_indices = train_feature_dict[key]
-        val_input_list.append(val_input_seq)
-        val_index_list.append(val_indices)
-
-    return input_list, input_size_list, index_list, target, val_input_list, val_index_list, val_target
-
-
-def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=False, restrict_seqlen=4):
     # Getting inputs.
     input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
         = get_inputs(restrict_seqlen=restrict_seqlen)
@@ -68,8 +33,8 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
     # declaring Network.
     net = Strain(input_size_list=input_size_list)
-    # Using default learning rate for adadelta.
-    optimizer = optim.Adam(net.parameters(), weight_decay=0.015, lr=0.000001)
+    # Using default learning rate for Adam.
+    optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
     net.apply(weights_init)
     val_soft = torch.nn.Softmax(dim=1)
 
@@ -85,11 +50,14 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         best_accuracy = best_accuracy.cuda()
 
     if resume_frm_chck_pt:
-        model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint()
+        model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint(file_name)
         net.load_state_dict(model_state)
-        # optimizer.load_state_dict(optimizer_state)
+        optimizer.load_state_dict(optimizer_state)
 
-    print("#########################################################")
+    if reset_optimizer_state:
+        optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
+
+    print("######################################################")
     print("Start Epoch :", start_epoch)
 
     # Train the network
@@ -126,8 +94,8 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
         else:
             is_best = False
 
-        print("Y_pred {}".format(y_pred))
-        print("Y_true {}".format(y_true))
+        # print("Y_pred {}".format(y_pred))
+        # print("Y_true {}".format(y_true))
 
         # force save model without it being the best accuracy.
         if force_save_model:
@@ -135,13 +103,20 @@ def train(start_epoch=0, epochs=10, resume_frm_chck_pt=True, force_save_model=Fa
 
         # generating states. Saving checkpoint after every epoch.
         state = chck.create_state(net, optimizer, epoch, start_epoch, accuracy)
-        chck.save_checkpoint(state, is_best)
+
+        chck.save_checkpoint(state, is_best, full_file_name=file_name)
 
         print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch + epoch + 1, accuracy))
 
-    print("#########################################################")
+    print("######################################################")
     print("Best Accuracy :", best_accuracy)
-    print("#########################################################")
+    print("######################################################")
+
 
 if __name__ == "__main__":
-    train(start_epoch=0, epochs=200, resume_frm_chck_pt=True, force_save_model=False, restrict_seqlen=-1)
+    train(start_epoch=0,
+          epochs=2,
+          resume_frm_chck_pt=True,
+          force_save_model=True,
+          reset_optimizer_state=False,
+          restrict_seqlen=2)
