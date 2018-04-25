@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 import math
+from sklearn.preprocessing import normalize
 
 
 def generate_baseline_variables(feature_list=[
@@ -16,7 +17,6 @@ def generate_baseline_variables(feature_list=[
     "phonelock_details",
     "gps_details"],
         val_set_size=.3,
-        restrict_seqlen=10,
         is_cuda_available=False
 
 ):
@@ -28,11 +28,11 @@ def generate_baseline_variables(feature_list=[
     for feature in feature_list:
 
         # Read CSV and skip the time columns.
-        raw_feature_train_x = pd.read_csv("Data/" + feature + "_train_x.csv", skip_blank_lines=False).iloc[:, 1:]
-        raw_feature_train_y = pd.read_csv("Data/" + feature + "_train_y.csv", skip_blank_lines=False)
+        raw_feature_train_x = pd.read_csv("data/" + feature + "_train_x.csv", skip_blank_lines=False).iloc[:, 1:]
+        raw_feature_train_y = pd.read_csv("data/" + feature + "_train_y.csv", skip_blank_lines=False)
         # to bring the values from 0-4.
         raw_feature_train_y["stress_level"] += -1
-        raw_feature_train_y_indices = pd.read_csv("Data/" + feature + "_train_y_indices.csv", skip_blank_lines=False)
+        raw_feature_train_y_indices = pd.read_csv("data/" + feature + "_train_y_indices.csv", skip_blank_lines=False)
 
         # Finding Last Valid index.
         last_valid_index = raw_feature_train_y_indices.iloc[-1, :].values
@@ -116,6 +116,11 @@ def generate_baseline_variables(feature_list=[
 
     np_train_x = train_x.as_matrix()
     np_val_x = val_x.as_matrix()
+
+    # # normalizing the data.
+    # np_train_x = normalize(np_train_x)
+    # np_val_x = normalize(np_val_x)
+
     np_train_target = train_target.as_matrix()
     np_val_target = val_target.as_matrix()
 

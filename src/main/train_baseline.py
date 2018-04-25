@@ -16,17 +16,16 @@ def train(start_epoch=0,
           reset_optimizer_state=False,
           restrict_seqlen=4,
           train=True):
-
     feature_list = [
-    "activity_details",
-    # "dinning_details" ,
-    "sms_details",
-    "audio_details",
-    "conversation_details",
-    "dark_details",
-    "phonecharge_details",
-    "phonelock_details",
-    "gps_details"]
+        "activity_details",
+        # "dinning_details" ,
+        "sms_details",
+        "audio_details",
+        "conversation_details",
+        "dark_details",
+        "phonecharge_details",
+        "phonelock_details",
+        "gps_details"]
 
     # getting current working directory initialize checkpoint file name.
     cwd = os.getcwd()
@@ -34,13 +33,16 @@ def train(start_epoch=0,
 
     # Getting inputs.
     train_input_seq, train_target, val_input_seq, val_target \
-        = generate_baseline_variables(restrict_seqlen=restrict_seqlen)
-    print("train_input_seq", len(train_input_seq))
-    print("train_target_seq", len(train_target))
+        = generate_baseline_variables(feature_list=feature_list)
+
+    # squeezing dimensions in target sets.
+    train_target = train_target.squeeze(1)
+    val_target = val_target.squeeze(1)
+
     # Extracting shape of input to initilize network.
     x, y = train_input_seq.shape
 
-    print("Initializing net with {} features".format(y))
+    print("Initializing net with {} - y features and {} - x".format(y, x))
 
     # Initializing Best_Accuracy as 0
     best_accuracy = Variable(torch.from_numpy(np.array([0])).float())
@@ -87,9 +89,8 @@ def train(start_epoch=0,
         net.train(True)
         optimizer.zero_grad()
         y_hat = net.forward(train_input_seq)
-        print("y_hat", y_hat)
-        print("train_target", train_target)
         loss = criterion(y_hat, train_target)
+
         loss.backward()
         optimizer.step()
 
@@ -132,9 +133,8 @@ def train(start_epoch=0,
 
 if __name__ == "__main__":
     train(start_epoch=0,
-          epochs=2,
+          epochs=1000,
           resume_frm_chck_pt=False,
           force_save_model=True,
           reset_optimizer_state=False,
-          restrict_seqlen=2,
-          train=False)
+          train=True)
