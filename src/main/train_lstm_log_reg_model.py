@@ -1,5 +1,5 @@
 from main.model.lstm_log_reg import Strain, weights_init
-from main.utils.get_inputs import get_inputs
+from main.utils.get_lstm_log_reg_inputs import get_inputs
 import main.utils.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim
@@ -115,7 +115,7 @@ def train(start_epoch=0,
 
 if __name__ == "__main__":
     train(start_epoch=0,
-          epochs=2,
+          epochs=200,
           resume_frm_chck_pt=True,
           force_save_model=True,
           reset_optimizer_state=False,

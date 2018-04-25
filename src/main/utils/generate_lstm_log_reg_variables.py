@@ -5,7 +5,7 @@ import math
 from sklearn.preprocessing import normalize
 
 
-def generate_variables(feature_list=[
+def generate_lstm_log_reg_variables(feature_list=[
     "activity_details",
     # "dinning_details" ,
     "sms_details",
