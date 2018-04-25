@@ -13,10 +13,13 @@ class StrainBaseline(nn.Module):
 
         # since input_size_list contains a list of sizes of each feature, We initialize those many RNN cells, 1 for each
         # feature.
-        self.linear = nn.Linear(len(num_features) * 3, num_classes)
+        self.linear = nn.Linear(num_features, num_classes)
 
     def forward(self, input):
         # print("Concatenated Feature vectors", y_out)
+        if (input != input).any():
+            print("null exists")
+
         y_out = self.linear(input)
 
         return y_out

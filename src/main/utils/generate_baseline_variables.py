@@ -92,6 +92,11 @@ def generate_baseline_variables(feature_list=[
     student_id_col = first_feature.iloc[:, 0]
     final_list = [feature.iloc[:, 1:] for feature in train_x_list]
     final_list.insert(0, student_id_col)
+
+    # resetting indices for each feature.
+    for i in range(len(final_list)):
+        final_list[i].reset_index(drop=True, inplace=True)
+
     train_x = pd.concat(final_list, axis=1, ignore_index=True)
 
     # val
@@ -99,6 +104,11 @@ def generate_baseline_variables(feature_list=[
     student_id_col = first_feature.iloc[:, 0]
     final_list = [feature.iloc[:, 1:] for feature in val_x_list]
     final_list.insert(0, student_id_col)
+
+    # resetting indices for each feature.
+    for i in range(len(final_list)):
+        final_list[i].reset_index(drop=True, inplace=True)
+
     val_x = pd.concat(final_list, axis=1, ignore_index=True)
 
     train_target = feature_train_y
