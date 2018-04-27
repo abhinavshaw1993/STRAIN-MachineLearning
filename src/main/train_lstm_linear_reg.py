@@ -1,4 +1,4 @@
-from main.model.lstm_log_reg import Strain_log_regression, weights_init
+from main.model.lstm_linear_reg import Strain_linear_reg, weights_init
 from main.utils.get_lstm_log_reg_inputs import get_inputs
 import main.utils.checkpointing as chck
 import torch.nn as nn
@@ -17,14 +17,17 @@ def train(start_epoch=0,
           restrict_seqlen=4):
     # getting current working directory initialize checkpoint file name.
     cwd = os.getcwd()
-    file_name = cwd + '/output/log_reg.tar'
+    file_name = cwd + '/output/linear_reg.tar'
 
     # Getting inputs.
     input_list, input_size_list, index_list, target, val_input_list, val_index_list, y_true \
-        = get_inputs(restrict_seqlen=restrict_seqlen)
+        = get_inputs(restrict_seqlen=restrict_seqlen, standardize=True)
 
-    # Initializing Best_Accuracy as 0
-    best_accuracy = Variable(torch.from_numpy(np.array([0])).float())
+    target = target.float()
+    y_true = y_true.float()
+
+    # Initializing Best_mse as 0
+    best_mse = Variable(torch.from_numpy(np.array([100000000000])).float())
 
     print("Force-Saving is set to {}".format(force_save_model))
 
@@ -32,13 +35,11 @@ def train(start_epoch=0,
         return
 
     # declaring Network.
-    net = Strain_log_regression(input_size_list=input_size_list)
+    net = Strain_linear_reg(input_size_list=input_size_list)
     # Using default learning rate for Adam.
     optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
     net.apply(weights_init)
-    val_soft = torch.nn.Softmax(dim=1)
-
-    criterion = nn.CrossEntropyLoss(size_average=True)
+    criterion = nn.MSELoss()
 
     if torch.cuda.device_count() > 1:
         print("Using {} GPUs".format(torch.cuda.device_count()))
@@ -47,10 +48,10 @@ def train(start_epoch=0,
     if torch.cuda.is_available():
         print("Training on GPU")
         net = net.cuda()
-        best_accuracy = best_accuracy.cuda()
+        best_mse = best_mse.cuda()
 
     if resume_frm_chck_pt:
-        model_state, optimizer_state, start_epoch, best_accuracy = chck.load_checkpoint(file_name)
+        model_state, optimizer_state, start_epoch, best_mse = chck.load_checkpoint(file_name)
         net.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
@@ -68,56 +69,47 @@ def train(start_epoch=0,
         net.train(True)
         optimizer.zero_grad()
         y_hat = net.forward(input_list, index_list)
-        y_hat = y_hat.long()
         loss = criterion(y_hat, target)
+        print("working till here")
         loss.backward()
         optimizer.step()
 
         ######################## Validating ########################
 
         net.eval()
+
         y_pred = net.forward(val_input_list, val_index_list)
-        y_pred = val_soft(y_pred)
+        mse = criterion(y_pred, y_true)
 
-        # y_pred = y_pred.data.numpy().argmax(axis=1)
-        # accuracy = accuracy_score(y_true, y_pred)
-
-        _, y_pred = y_pred.max(1)
-        accuracy = y_true.eq(y_pred).sum()
-        accuracy = accuracy.float() / len(y_true)
-
-        # print(type(accuracy), type(best_accuracy))
-        # print("best accuracy {} accuracy {}".format(best_accuracy, accuracy))
-
-        if torch.gt(accuracy, best_accuracy).all():
-            best_accuracy = accuracy
+        if torch.lt(mse, best_mse).all():
+            best_mse = mse
             is_best = True
         else:
             is_best = False
 
-        # print("Y_pred {}".format(y_pred))
-        # print("Y_true {}".format(y_true))
+        print("Y_pred {}".format(y_pred))
+        print("Y_true {}".format(y_true))
 
-        # force save model without it being the best accuracy.
+        # force save model without it being the best MSE.
         if force_save_model:
             is_best = True
 
         # generating states. Saving checkpoint after every epoch.
-        state = chck.create_state(net, optimizer, epoch, start_epoch, accuracy)
+        state = chck.create_state(net, optimizer, epoch, start_epoch, mse)
 
         chck.save_checkpoint(state, is_best, full_file_name=file_name)
 
-        print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch + epoch + 1, accuracy))
+        print("=> loss of '{}' at epoch {} \n=> mse of {}".format(loss.data[0], start_epoch + epoch + 1, mse))
 
     print("######################################################")
-    print("Best Accuracy :", best_accuracy)
+    print("Best MSE :", best_mse)
     print("######################################################")
 
 
 if __name__ == "__main__":
     train(start_epoch=0,
           epochs=500,
-          resume_frm_chck_pt=True,
+          resume_frm_chck_pt=False,
           force_save_model=True,
           reset_optimizer_state=False,
           restrict_seqlen=-1)

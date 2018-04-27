@@ -3,7 +3,7 @@ import torch
 from torch.autograd import Variable
 import math
 from sklearn.preprocessing import normalize
-
+from sklearn.preprocessing import StandardScaler
 
 def generate_lstm_log_reg_variables(feature_list=[
     "activity_details",
@@ -17,11 +17,15 @@ def generate_lstm_log_reg_variables(feature_list=[
     "gps_details"],
     restrict_seqlen=-1,
     is_cuda_available=True,
+    standardize=False,
     val_set_size=0.3):
 
 
     train_feature_dict = {}
     val_feature_dict = {}
+
+    if standardize:
+        scalar = StandardScaler()
 
     for feature in feature_list:
 
@@ -66,6 +70,11 @@ def generate_lstm_log_reg_variables(feature_list=[
         np_feature_train_x = feature_train_x.as_matrix()
         np_feature_val_x = feature_val_x.as_matrix()
 
+        # Standardize if true.
+        if standardize:
+            np_feature_train_x = scalar.fit_transform(np_feature_train_x)
+            np_feature_val_x = scalar.fit_transform(np_feature_val_x)
+
         # Extracting shape for reshaping.
         x, y = np_feature_train_x.shape
         shape = (x, 1, y)
@@ -86,6 +95,7 @@ def generate_lstm_log_reg_variables(feature_list=[
 
         np_feature_val_y = np_feature_val_y[np_feature_val_indices]
         np_feature_val_y = np_feature_val_y.reshape((np_feature_val_y.shape[0], 1, 1))
+
 
         # Initializing Input Seq , Target Seq and Indices for Train Set.
         input_seq_tensor = torch.from_numpy(np_feature_train_x)

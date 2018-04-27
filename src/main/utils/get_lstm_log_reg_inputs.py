@@ -1,7 +1,8 @@
 from main.utils.generate_lstm_log_reg_variables import generate_lstm_log_reg_variables
 import torch
 
-def get_inputs(restrict_seqlen=5):
+
+def get_inputs(restrict_seqlen=5, standardize=False):
     # Set Cuda.
 
     feature_list = [
@@ -18,7 +19,8 @@ def get_inputs(restrict_seqlen=5):
     train_feature_dict, val_feature_dict = generate_lstm_log_reg_variables(feature_list=feature_list,
                                                                            restrict_seqlen=restrict_seqlen,
                                                                            is_cuda_available=torch.cuda.is_available(),
-                                                                           val_set_size=0.4)
+                                                                           val_set_size=0.4,
+                                                                           standardize=standardize)
 
     # return
     input_size_list = []

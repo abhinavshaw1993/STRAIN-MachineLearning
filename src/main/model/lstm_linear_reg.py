@@ -4,15 +4,15 @@ import torch.nn as nn
 
 
 # Define ModelClass
-class Strain_log_regression(nn.Module):
+class Strain_linear_reg(nn.Module):
 
-    def __init__(self, input_size_list, num_classes=5, hidden_dim=20):
-        super(Strain_log_regression, self).__init__()
+    def __init__(self, input_size_list, hidden_dim=20):
+        super(Strain_linear_reg, self).__init__()
 
         # since input_size_list contains a list of sizes of each feature, We initialize those many RNN cells, 1 for each
         # feature.
         self.rnns = nn.ModuleList([nn.LSTM(input_size, hidden_dim, 1) for input_size in input_size_list])
-        self.linear = nn.Linear(len(input_size_list)*hidden_dim, num_classes)
+        self.linear = nn.Linear(len(input_size_list)*hidden_dim, 1)
 
     def forward(self, input_list, index_list):
 
