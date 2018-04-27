@@ -116,7 +116,7 @@ def train(start_epoch=0,
 
 if __name__ == "__main__":
     train(start_epoch=0,
-          epochs=500,
+          epochs=1,
           resume_frm_chck_pt=True,
           force_save_model=True,
           reset_optimizer_state=False,
