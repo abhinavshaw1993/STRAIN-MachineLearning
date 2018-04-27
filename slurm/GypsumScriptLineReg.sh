@@ -14,6 +14,6 @@ echo $SLURM_JOBID - `hostname` >> ~/slurm-jobs.txt
 
 # Chage Dir to SRC.
 cd ~/projects/STRAIN-MachineLearning/src/main
-PYTHONPATH=../ python train.py
+PYTHONPATH=../ python train_lstm_linear_reg.py
 
 
