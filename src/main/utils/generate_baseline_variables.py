@@ -17,9 +17,7 @@ def generate_baseline_variables(feature_list=[
     "phonelock_details",
     "gps_details"],
         val_set_size=.3,
-        is_cuda_available=False
-
-):
+        is_cuda_available=False):
     # Dict Initialization.
     train_feature_dict = {}
     val_feature_dict = {}
@@ -117,9 +115,9 @@ def generate_baseline_variables(feature_list=[
     np_train_x = train_x.as_matrix()
     np_val_x = val_x.as_matrix()
 
-    # # normalizing the data.
-    # np_train_x = normalize(np_train_x)
-    # np_val_x = normalize(np_val_x)
+    # normalizing the data.
+    np_train_x = normalize(np_train_x)
+    np_val_x = normalize(np_val_x)
 
     np_train_target = train_target.as_matrix()
     np_val_target = val_target.as_matrix()
