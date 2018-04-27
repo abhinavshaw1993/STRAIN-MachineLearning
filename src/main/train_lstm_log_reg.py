@@ -68,7 +68,6 @@ def train(start_epoch=0,
         net.train(True)
         optimizer.zero_grad()
         y_hat = net.forward(input_list, index_list)
-        y_hat = y_hat.long()
         loss = criterion(y_hat, target)
         loss.backward()
         optimizer.step()
