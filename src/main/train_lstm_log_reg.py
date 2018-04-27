@@ -117,7 +117,7 @@ def train(start_epoch=0,
 if __name__ == "__main__":
     train(start_epoch=0,
           epochs=1,
-          resume_frm_chck_pt=True,
-          force_save_model=True,
+          resume_frm_chck_pt=False,
+          force_save_model=False,
           reset_optimizer_state=False,
           restrict_seqlen=-1)
