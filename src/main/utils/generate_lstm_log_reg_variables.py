@@ -35,6 +35,7 @@ def generate_lstm_log_reg_variables(feature_list=[
         raw_feature_train_x = normalize(raw_feature_train_x.as_matrix())
         raw_feature_train_x = pd.DataFrame(raw_feature_train_x)
         raw_feature_train_y = pd.read_csv("data/" + feature + "_train_y.csv", skip_blank_lines=False)
+
         raw_feature_train_y["stress_level"] += -1
         raw_feature_train_y_indices = pd.read_csv("data/" + feature + "_train_y_indices.csv", skip_blank_lines=False)
 
@@ -70,10 +71,10 @@ def generate_lstm_log_reg_variables(feature_list=[
         np_feature_train_x = feature_train_x.as_matrix()
         np_feature_val_x = feature_val_x.as_matrix()
 
-        # Standardize if true.
-        if standardize:
-            np_feature_train_x = scalar.fit_transform(np_feature_train_x)
-            np_feature_val_x = scalar.fit_transform(np_feature_val_x)
+        # # Standardize if true.
+        # if standardize:
+        #     np_feature_train_x = scalar.fit_transform(np_feature_train_x)
+        #     np_feature_val_x = scalar.fit_transform(np_feature_val_x)
 
         # Extracting shape for reshaping.
         x, y = np_feature_train_x.shape
