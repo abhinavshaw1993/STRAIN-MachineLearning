@@ -14,7 +14,8 @@ def train(start_epoch=0,
           resume_frm_chck_pt=True,
           force_save_model=False,
           reset_optimizer_state=False,
-          restrict_seqlen=4):
+          restrict_seqlen=4,
+          train_model=True):
     # getting current working directory initialize checkpoint file name.
     cwd = os.getcwd()
     file_name = cwd + '/output/log_reg.tar'
@@ -28,7 +29,7 @@ def train(start_epoch=0,
 
     print("Force-Saving is set to {}".format(force_save_model))
 
-    if not train:
+    if not train_model:
         return
 
     # declaring Network.

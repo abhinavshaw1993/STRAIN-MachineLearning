@@ -83,7 +83,7 @@ def generate_lstm_log_reg_loso_variables(feature_list=("activity_details",
             # If want to truncate training data
             if restrict_seqlen != -1:
                 feature_indices = raw_feature_train_y_indices[:restrict_seqlen]
-                last_idx = feature_indices.iloc[-1, 0]
+                last_idx = feature_indices.iloc[-1]
                 feature_train_x = raw_feature_train_x.iloc[:last_idx + 1]
                 feature_train_y = raw_feature_train_y.iloc[:last_idx + 1]
 

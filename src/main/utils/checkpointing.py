@@ -4,10 +4,14 @@ This Script Iplements al fucntions to checkpoint PyTorch Models.
 
 import torch
 import os
+import tarfile
 
 
 def save_checkpoint(state, is_best, full_file_name):
     # Save the check point if the model it best.
+
+    if not os.path.exists(full_file_name):
+      tarfile.open(full_file_name)
 
     if is_best:
         print("=> Saving a new best")
@@ -19,6 +23,10 @@ def save_checkpoint(state, is_best, full_file_name):
 def load_checkpoint(full_file_name):
     print("=> Loading Model from Checkpoint")
 
+    if not os.path.exists(full_file_name):
+        print("File {} does not exist".format(full_file_name))
+        return
+
     # If GPU available, load on GPU.
     if torch.cuda.is_available:
         state = torch.load(full_file_name)
@@ -27,7 +35,6 @@ def load_checkpoint(full_file_name):
                            map_location=lambda storage, loc: 'cpu')
 
     keys = state.keys()
-
     model_state, optimizer_state, start_epoch, best_accuracy = None, None, None, None
 
     if "model_state" in keys:
