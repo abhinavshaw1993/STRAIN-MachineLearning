@@ -11,7 +11,8 @@ def save_checkpoint(state, is_best, full_file_name):
     # Save the check point if the model it best.
 
     if not os.path.exists(full_file_name):
-      tarfile.open(full_file_name)
+        tar = open(full_file_name, mode="w+")
+        tar.close()
 
     if is_best:
         print("=> Saving a new best")

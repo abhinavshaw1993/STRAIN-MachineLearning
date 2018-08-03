@@ -1,0 +1,31 @@
+start_epoch: 0
+epochs: 2
+resume_frm_chck_pt: False
+force_save_model: True
+reset_optimizer_state: False
+restrict_seqlen: 2
+train_model: True
+student_list:
+  [
+      "student 1",
+      "student 15",
+      "student 24",
+      "student 30",
+      "student 42",
+      "student 52"
+                  ]
+
+feature_list: [
+
+        "activity_details",
+        "audio_details",
+        "sms_details",
+        "call_log_details",
+        "conversation_details",
+        "dark_details",
+        "gps_details",
+        "phonecharge_details",
+        "phonelock_details",
+        "sleep_details"
+
+      ]

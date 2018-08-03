@@ -1,25 +1,27 @@
-from main.model.lstm_log_reg import Strain_log_regression, weights_init
-from main.utils.get_lstm_log_reg_loso_inputs import get_inputs
-from torch.autograd import Variable
-from main.utils import kfold
 import main.utils.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim
 import torch
 import numpy as np
+from main.model.lstm_log_reg import Strain_log_regression, weights_init
+from main.data_getter.get_lstm_log_reg_loso_inputs import get_inputs
+from torch.autograd import Variable
+from main.utils import kfold
 from main.definition import ROOT_DIR
+from main.utils.read_config import read_config
 
 
-def train(start_epoch=0,
+def train(student_list,
+          feature_list,
+          start_epoch=0,
           epochs=10,
           resume_frm_chck_pt=True,
           force_save_model=False,
           reset_optimizer_state=False,
           restrict_seqlen=4,
           train_model=True):
-
     # Getting inputs and extracting the input size list.
-    data = get_inputs(restrict_seqlen=restrict_seqlen)
+    data = get_inputs(student_list=student_list, feature_list=feature_list,restrict_seqlen=restrict_seqlen)
     input_size_list = data[0][1]
 
     if not train_model:
@@ -35,7 +37,11 @@ def train(start_epoch=0,
 
     # Trains on all students in the data list.
 
+    print("################# No. of Students: {} #################".format(len(data)))
+
     for counter, split in enumerate(kfold.get_splits(data)):
+
+        print("################# Training Split : {} #################".format(counter))
         train_set_list, val_set = split
 
         val_score = []
@@ -66,8 +72,6 @@ def train(start_epoch=0,
         if reset_optimizer_state:
             optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
 
-        print("Start Epoch :", start_epoch)
-
         for epoch in range(epochs):
 
             print("###################### Epoch {} #######################".format(start_epoch + epoch + 1))
@@ -81,7 +85,7 @@ def train(start_epoch=0,
                 optimizer.step()
 
             ######################## Validating ########################
-            val_input_list, val_index_list, y_true = val_set
+            val_input_list, _, val_index_list, y_true = val_set
             net.eval()
             y_pred = net.forward(val_input_list, val_index_list)
             y_pred = val_soft(y_pred)
@@ -105,12 +109,12 @@ def train(start_epoch=0,
             state = chck.create_state(net, optimizer, epoch, start_epoch, best_score)
             chck.save_checkpoint(state, is_best, full_file_name=file_name)
 
-            print("=> loss of '{}' at epoch {} \n=> accuracy of {}".format(loss.data[0], start_epoch + epoch + 1,
+            print("=> loss of '{}' at epoch {} \n=> accuracy of \n {}".format(loss.data[0], start_epoch + epoch + 1,
                                                                               accuracy))
 
         val_score.append(best_score)
 
-    avg_score = val_score.sum() / len(val_score)
+    avg_score = sum(val_score) / len(val_score)
 
     print("######################################################")
     print("Loso CrossVal Score :", avg_score)
@@ -118,10 +122,14 @@ def train(start_epoch=0,
 
 
 if __name__ == "__main__":
-    train(start_epoch=0,
-          epochs=2,
-          resume_frm_chck_pt=False,
-          force_save_model=False,
-          reset_optimizer_state=False,
-          restrict_seqlen=2,
-          train_model=True)
+    config = read_config("loso_config.yml")
+
+    train(student_list=config["student_list"],
+          feature_list=config["feature_list"],
+          start_epoch=config["start_epoch"],
+          epochs=config["epochs"],
+          resume_frm_chck_pt=config["resume_frm_chck_pt"],
+          force_save_model=config["force_save_model"],
+          reset_optimizer_state=config["reset_optimizer_state"],
+          restrict_seqlen=config["restrict_seqlen"],
+          train_model=config["train_model"])

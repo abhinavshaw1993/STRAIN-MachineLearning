@@ -1,5 +1,5 @@
 from main.model.lstm_log_reg import Strain_log_regression, weights_init
-from main.utils.get_lstm_log_reg_inputs import get_inputs
+from main.data_getter.get_lstm_log_reg_inputs import get_inputs
 import main.utils.checkpointing as chck
 import torch.nn as nn
 import torch.optim as optim

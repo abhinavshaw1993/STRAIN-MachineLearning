@@ -1,28 +1,14 @@
-from main.utils.generate_lstm_log_reg_loso_variables import generate_lstm_log_reg_loso_variables
+from main.variable.generate_lstm_log_reg_loso_variables import generate_lstm_log_reg_loso_variables
 import torch
 
 
-def get_inputs(restrict_seqlen=5, standardize=False):
-    # Set Cuda.
-
-    feature_list = [
-        "activity_details",
-        "audio_details",
-        "sms_details",
-        "call_log_details",
-        "conversation_details",
-        "dark_details",
-        "gps_details",
-        "phonecharge_details",
-        "phonelock_details",
-        "sleep_details"]
-
+def get_inputs(student_list, feature_list, restrict_seqlen=5, standardize=False):
     # Getting the input and generating respective sequences.
-    train_feature_list = generate_lstm_log_reg_loso_variables(feature_list=feature_list,
+    train_feature_list = generate_lstm_log_reg_loso_variables(student_list=student_list,
+                                                              feature_list=feature_list,
                                                               restrict_seqlen=restrict_seqlen,
                                                               is_cuda_available=torch.cuda.is_available(),
                                                               standardize=standardize)
-
 
     data = []
 

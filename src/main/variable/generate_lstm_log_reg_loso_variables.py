@@ -4,6 +4,7 @@ from torch.autograd import Variable
 from main.definition import ROOT_DIR
 from sklearn.preprocessing import normalize
 
+
 def adjust_stress_values(stress_level):
     mapping = {
         1: 2,
@@ -18,50 +19,13 @@ def adjust_stress_values(stress_level):
     except KeyError:
         return None
 
-def generate_lstm_log_reg_loso_variables(feature_list=("activity_details",
-                                                  "audio_details",
-                                                  "sms_details",
-                                                  "call_log_details",
-                                                  "conversation_details",
-                                                  "dark_details",
-                                                  "gps_details",
-                                                  "phonecharge_details",
-                                                  "phonelock_details",
-                                                  "sleep_details"
-                                                  ),
-                                    restrict_seqlen=-1,
-                                    is_cuda_available=False,
-                                    standardize=True
-                                    ):
+
+def generate_lstm_log_reg_loso_variables(student_list,
+                                         feature_list,
+                                         restrict_seqlen=-1,
+                                         is_cuda_available=False,
+                                         standardize=True):
     train_feature_list = []
-
-    # student_list = sorted([_ for _ in os.listdir(ROOT_DIR + "/StudentLife Data/") if "student" in _])
-
-    student_list = [
-
-        "student 1",
-        "student 2",
-        "student 12",
-        "student 15",
-        "student 24",
-        "student 27",
-        "student 30",
-        "student 35",
-        "student 42",
-        "student 52",
-    ]
-    
-    student_list = [
-
-        "student 1",
-        "student 15",
-        "student 24",
-        "student 30",
-        "student 42",
-        "student 52",
-    ]
-
-    # student_list = ["student 1"]
 
     for student in student_list:
 
@@ -73,6 +37,7 @@ def generate_lstm_log_reg_loso_variables(feature_list=("activity_details",
                 "{}/StudentLife Data/{}/{}_train_x.csv".format(ROOT_DIR, student, feature),
                 skip_blank_lines=False).iloc[:, 2:]
             raw_feature_train_y = raw_feature_train_x.iloc[:, -1]
+            raw_feature_train_y = raw_feature_train_y.apply(adjust_stress_values)
             raw_feature_train_x = raw_feature_train_x.iloc[:, :-1]
 
             # Indices
@@ -131,4 +96,3 @@ def generate_lstm_log_reg_loso_variables(feature_list=("activity_details",
         train_feature_list.append(train_feature_dict.copy())
 
     return train_feature_list
-

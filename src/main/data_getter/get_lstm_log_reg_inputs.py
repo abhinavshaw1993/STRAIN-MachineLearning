@@ -1,4 +1,4 @@
-from main.utils.generate_lstm_log_reg_variables import generate_lstm_log_reg_variables
+from main.variable.generate_lstm_log_reg_variables import generate_lstm_log_reg_variables
 import torch
 
 
