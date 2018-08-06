@@ -24,15 +24,15 @@ def train(student_list,
     data = get_inputs(student_list=student_list, feature_list=feature_list,restrict_seqlen=restrict_seqlen)
     input_size_list = data[0][1]
 
+    print("Number of GPUs: {}".format(torch.cuda.device_count()))
+
     if not train_model:
         print("Not in Train Mode")
         return
 
     print("Force-Saving is set to {}".format(force_save_model))
-    print("Number of GPUs: {}".format(torch.cuda.device_count()))
 
-    if not train:
-        return
+
 
     print("######################################################")
 
