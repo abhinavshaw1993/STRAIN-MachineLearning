@@ -5,7 +5,7 @@
 #SBATCH --partition=m40-short
 #SBATCH --output=STRAIN-loso_log_reg_loso_mul_gpu-%A.out
 #SBATCH --error=STRAIN-loso_log_reg_loso_mul_gpu-%A.err
-#SBATCH --gres=gpu:7
+#SBATCH --gres=gpu:8
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=abhinavshaw@umass.edu
 
