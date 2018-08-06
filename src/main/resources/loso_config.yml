@@ -4,7 +4,7 @@ resume_frm_chck_pt: True
 force_save_model: True
 reset_optimizer_state: False
 restrict_seqlen: -1
-train_model: True
+train_model: False
 student_list:
   [
       "student 1",
