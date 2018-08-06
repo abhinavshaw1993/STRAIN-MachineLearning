@@ -2,9 +2,9 @@
 #
 #SBATCH --mem=60000
 #SBATCH --job-name=1-gpu-STRAIN-custom
-#SBATCH --partition=m40-long
-#SBATCH --output=STRAIN-loso_log_reg-%A.out
-#SBATCH --error=STRAIN-loso_log_reg-%A.err
+#SBATCH --partition=m40-short
+#SBATCH --output=STRAIN-loso_log_reg_loso_mul_gpu-%A.out
+#SBATCH --error=STRAIN-loso_log_reg_loso_mul_gpu-%A.err
 #SBATCH --gres=gpu:7
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=abhinavshaw@umass.edu
