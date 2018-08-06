@@ -29,10 +29,7 @@ def train(student_list,
         return
 
     print("Force-Saving is set to {}".format(force_save_model))
-
-
-    if torch.cuda.device_count() > 1:
-        print("Using {} GPUs".format(torch.cuda.device_count()))
+    print("Number of GPUs: {}".format(torch.cuda.device_count()))
 
     if not train:
         return
