@@ -10,7 +10,7 @@ import numpy as np
 data_dir = ROOT_DIR + "/StudentLife Data"
 student_list = os.listdir(data_dir)
 
-student_list = [ _ for _ in student_list if "student" in _]
+student_list = [_ for _ in student_list if "student" in _]
 
 def adjust_stress_values(stress_level):
     mapping = {
@@ -61,6 +61,8 @@ for student in student_list:
         # Filling NA Values.
         resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='ffill')
         resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='bfill')
+
+        print("Type: ", type(resampled_feature_train_x.index.map(lambda t: t.date())))
 
         unique_dates = list(resampled_feature_train_x.index.map(lambda t: t.date()).unique())
 
