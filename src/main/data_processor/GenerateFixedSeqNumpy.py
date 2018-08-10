@@ -49,8 +49,8 @@ for student in student_list:
         # Parse Min and Max Date, Convert them to string.
         start_date = resampled_feature_train_x.index.min()
         end_date = resampled_feature_train_x.index.max()
-        start_date = start_date.to_datetime()
-        end_date = end_date.to_datetime()
+        start_date = start_date.to_pydatetime()
+        end_date = end_date.to_pydatetime()
 
         start_date = convert_to_date(start_date.year, start_date.month, start_date.day)
         end_date = convert_to_date(end_date.year, end_date.month, end_date.day) + timedelta(days=1)
@@ -62,7 +62,7 @@ for student in student_list:
         resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='ffill')
         resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='bfill')
 
-        print("Type: ", type(resampled_feature_train_x.index.map(lambda t: t.date())))
+        # print("Type: ", type(resampled_feature_train_x.index.map(lambda t: t.date())))
 
         unique_dates = list(resampled_feature_train_x.index.map(lambda t: t.date()).unique())
 
