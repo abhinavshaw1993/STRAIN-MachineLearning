@@ -27,7 +27,6 @@ class Strain_log_regression(nn.Module):
             self.rnns[idx].flatten_parameters()
             y_out, _ = self.rnns[idx](input_list[idx])
 
-
             mask = torch.unsqueeze(mask_list[idx], dim=2)
             x, y, z = mask.shape
             mask = mask.expand(x, y, self.hidden_dim)
