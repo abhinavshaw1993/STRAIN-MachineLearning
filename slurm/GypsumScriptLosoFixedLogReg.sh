@@ -2,7 +2,7 @@
 #
 #SBATCH --mem=60000
 #SBATCH --job-name=1-gpu-STRAIN-custom
-#SBATCH --partition=m40-short
+#SBATCH --partition=m40-long
 #SBATCH --output=STRAIN-loso_log_reg_loso_fixed_seq-%A.out
 #SBATCH --error=STRAIN-loso_log_reg_loso_fixed_seq-%A.err
 #SBATCH --gres=gpu:1
