@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import timedelta
 from datetime import date as convert_to_date
 from sklearn.preprocessing import normalize
+from sklearn.preprocessing import StandardScaler
 from main.definition import ROOT_DIR
 import numpy as np
 
@@ -84,7 +85,9 @@ for student in student_list:
             #             print("Mask Shape:", days_train_y_index_mask.shape)
 
             # Normalize Days Training Data
-            days_train_x = normalize(days_train_x)
+            transformer = StandardScaler()
+            # days_train_x = normalize(days_train_x)
+            days_train_x = transformer(days_train_x)
 
             x.append(days_train_x)
             mask.append(days_train_y_index_mask)
