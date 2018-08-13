@@ -72,7 +72,7 @@ def train(student_list,
             optimizer.load_state_dict(optimizer_state)
 
         if reset_optimizer_state:
-            optimizer = optim.Adam(net.parameters(), weight_decay=0.01, lr=0.01)
+            optimizer = optim.Adam(net.parameters(), lr=0.001)
 
         for epoch in range(epochs):
 
