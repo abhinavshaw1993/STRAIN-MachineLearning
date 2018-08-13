@@ -87,7 +87,7 @@ for student in student_list:
             # Normalize Days Training Data
             transformer = StandardScaler()
             # days_train_x = normalize(days_train_x)
-            days_train_x = transformer(days_train_x)
+            days_train_x = transformer.fit_transform(days_train_x)
 
             x.append(days_train_x)
             mask.append(days_train_y_index_mask)
