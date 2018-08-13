@@ -44,7 +44,7 @@ def generate_lstm_log_reg_loso_fixed_variables(  feature_list,
             if restrict_seqlen != -1:
                 input_seq = input_seq[:restrict_seqlen]
                 input_mask = input_mask[:restrict_seqlen]
-                target = target[:restrict_seqlen]
+                target = target[:np.sum(input_mask)]
 
             # Initializing Input Seq , Target Seq and Indices for Train Set.
             input_seq_tensor = torch.from_numpy(input_seq)
