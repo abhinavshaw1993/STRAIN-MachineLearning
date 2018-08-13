@@ -1,8 +1,8 @@
 start_epoch: 0
 epochs: 200
-resume_frm_chck_pt: False
+resume_frm_chck_pt: True
 force_save_model: True
-reset_optimizer_state: True
+reset_optimizer_state: False
 restrict_seqlen: -1
 train_model: True
 student_list:
