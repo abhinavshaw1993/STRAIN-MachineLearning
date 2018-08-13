@@ -2,16 +2,17 @@ import os
 import pandas as pd
 from datetime import timedelta
 from datetime import date as convert_to_date
-from sklearn.preprocessing import normalize
 from sklearn.preprocessing import StandardScaler
 from main.definition import ROOT_DIR
 import numpy as np
+import copy
 
 
 data_dir = ROOT_DIR + "/StudentLife Data"
 student_list = os.listdir(data_dir)
 
 student_list = [_ for _ in student_list if "student" in _]
+
 
 def adjust_stress_values(stress_level):
     mapping = {
@@ -28,11 +29,16 @@ def adjust_stress_values(stress_level):
         return None
 
 
+student_list.remove("student 1")
+student_list.insert(0, "student 1")
+transformer = {}
+
 for student in student_list:
     print(student)
 
     files = os.listdir(data_dir + "/{}".format(student))
     files = [_ for _ in files if "train_x.csv" in _]
+    files.sort()
 
     for file in files:
 
@@ -71,6 +77,11 @@ for student in student_list:
         mask = []
         y = []
 
+        if student == "student 1":
+            # Set Stdev and mean for scaler.
+            transformer[file[:-4]] = copy.deepcopy(StandardScaler())
+            transformer[file[:-4]].fit(resampled_feature_train_x.iloc[:, :-1])
+
         for idx, date in enumerate(unique_dates):
             days_train_x = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, :-1]
             days_train_y = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, -1]
@@ -79,15 +90,12 @@ for student in student_list:
             days_train_y.reset_index(drop=True, inplace=True)
             days_train_y_index_mask = days_train_y.notnull()
             days_train_y = days_train_y[days_train_y_index_mask]
-
             days_train_x = days_train_x.as_matrix()
             days_train_y_index_mask = days_train_y_index_mask.as_matrix()
             #             print("Mask Shape:", days_train_y_index_mask.shape)
 
             # Normalize Days Training Data
-            transformer = StandardScaler()
-            # days_train_x = normalize(days_train_x)
-            days_train_x = transformer.fit_transform(days_train_x)
+            days_train_x = transformer[file[:-4]].transform(days_train_x)
 
             x.append(days_train_x)
             mask.append(days_train_y_index_mask)
