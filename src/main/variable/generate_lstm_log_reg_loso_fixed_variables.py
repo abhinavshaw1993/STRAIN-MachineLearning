@@ -15,11 +15,11 @@ def generate_lstm_log_reg_loso_fixed_variables(  feature_list,
         student_list = os.listdir("{}/{}".format(ROOT_DIR, "StudentLife Data"))
         student_list = [_ for _ in student_list if "student" in _]
 
-    import os
-    student_list = os.listdir("{}/{}".format(ROOT_DIR, "StudentLife Data"))
-    student_list = [_ for _ in student_list if "student" in _]
+    # import os
+    # student_list = os.listdir("{}/{}".format(ROOT_DIR, "StudentLife Data"))
+    # student_list = [_ for _ in student_list if "student" in _]
 
-    print("Studen   List:", student_list)
+    print("Student List:", student_list)
 
     for student in student_list:
 

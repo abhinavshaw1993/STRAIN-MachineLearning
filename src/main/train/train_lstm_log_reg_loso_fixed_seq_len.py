@@ -41,7 +41,10 @@ def train(student_list,
     for counter, split in enumerate(kfold.get_splits(data)):
 
         print("################# Training Split : {} #################".format(counter))
+
         train_set_list, val_set = split
+
+
 
         val_score = []
 
@@ -75,13 +78,23 @@ def train(student_list,
 
             print("###################### Epoch {} #######################".format(start_epoch + epoch + 1))
 
-            for input_list, _, index_list, target in train_set_list:
+            if len(train_set_list) == 0:
+                input_list, _, index_list, target = val_set
                 net.train(True)
                 optimizer.zero_grad()
                 y_hat = net.forward(input_list, index_list, len(target))
                 loss = criterion(y_hat, target)
                 loss.backward()
                 optimizer.step()
+
+            else:
+                for input_list, _, index_list, target in train_set_list:
+                    net.train(True)
+                    optimizer.zero_grad()
+                    y_hat = net.forward(input_list, index_list, len(target))
+                    loss = criterion(y_hat, target)
+                    loss.backward()
+                    optimizer.step()
 
             ######################## Validating ########################
             val_input_list, _, val_index_list, y_true = val_set
