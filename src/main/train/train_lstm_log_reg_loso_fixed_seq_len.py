@@ -38,19 +38,19 @@ def train(student_list,
     # Trains on all students in the data list.
     print("################# FixedLen Seq Trained on ALl Students #################")
 
-    for counter, split in enumerate(kfold.get_splits(data)):
+    kfold_split = kfold.get_splits(data)
+
+    for counter, split in enumerate(kfold_split):
 
         print("################# Training Split : {} #################".format(counter))
 
         train_set_list, val_set = split
 
-
-
         val_score = []
 
         # Declaring Network.
         net = Strain_log_regression(input_size_list=input_size_list)
-        optimizer = optim.Adam(net.parameters(), weight_decay=0.01)
+        optimizer = optim.Adam(net.parameters(), lr=0.01)
         net.apply(weights_init)
         val_soft = torch.nn.Softmax(dim=1)
         criterion = nn.CrossEntropyLoss(size_average=True)
@@ -78,23 +78,13 @@ def train(student_list,
 
             print("###################### Epoch {} #######################".format(start_epoch + epoch + 1))
 
-            if len(train_set_list) == 0:
-                input_list, _, index_list, target = val_set
+            for input_list, _, index_list, target in train_set_list:
                 net.train(True)
                 optimizer.zero_grad()
                 y_hat = net.forward(input_list, index_list, len(target))
                 loss = criterion(y_hat, target)
                 loss.backward()
                 optimizer.step()
-
-            else:
-                for input_list, _, index_list, target in train_set_list:
-                    net.train(True)
-                    optimizer.zero_grad()
-                    y_hat = net.forward(input_list, index_list, len(target))
-                    loss = criterion(y_hat, target)
-                    loss.backward()
-                    optimizer.step()
 
             ######################## Validating ########################
             val_input_list, _, val_index_list, y_true = val_set
