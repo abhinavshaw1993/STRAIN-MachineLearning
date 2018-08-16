@@ -1,11 +1,61 @@
 import os
-import pandas as pd
 from datetime import timedelta
 from datetime import date as convert_to_date
 from sklearn.preprocessing import StandardScaler
 from main.definition import ROOT_DIR
-import numpy as np
+import scipy
 import copy
+
+# imports for aggregations functions
+
+from scipy.stats import iqr as quartile_range
+from scipy.fftpack import fft
+import math
+import pandas as pd
+import numpy as np
+
+
+# Agg functions
+
+# For slope of time series
+def linear_fit(array_like):
+    # Linear features
+    if (len(array_like) == 0):
+        return [0, 0]
+    p = np.polyfit(np.arange(len(array_like)), array_like, 1)
+    return [p[0], p[1]]
+
+
+def poly_fit(array_like):
+    # Poly features
+    if (len(array_like) == 0):
+        return [0, 0, 0]
+    p = np.polyfit(np.arange(len(array_like)), array_like, 2)
+    return [p[0], p[1], p[2]]
+
+
+def iqr(array_like):
+    # inter quartile range.
+    result = quartile_range(array_like)
+    return result if not math.isnan(result) else 0
+
+
+def kurt(array_like):
+    result = scipy.stats.kurtosis(array_like)
+    return result if not math.isnan(result) else 0
+
+
+def mcr(array_like):
+    # returns how many times the mean has been crossed.
+    mean = np.mean(array_like)
+    array_like = array_like - mean
+    return np.sum(np.diff(np.sign(array_like)).astype(bool))
+
+
+def fourier_transform(array_like):
+    # Return Fast Fourier transfor of array.
+    result = fft(array_like)
+    return 0
 
 
 data_dir = ROOT_DIR + "/StudentLife Data"
@@ -43,7 +93,7 @@ for student in student_list:
     for file in files:
 
         csv_file_name = "{}/{}/{}".format(data_dir, student, file)
-
+        # print("{}/{}/{}".format(data_dir, student, file))
         feature_train_x = pd.read_csv("{}/{}/{}".format(data_dir, student, file),
                                       skip_blank_lines=False,
                                       parse_dates=True,
@@ -78,21 +128,44 @@ for student in student_list:
         y = []
 
         if student == "student 1":
-            # Set Stdev and mean for scaler.
+            # Set Stdev and mean for scalar.
             transformer[file[:-4]] = copy.deepcopy(StandardScaler())
-            transformer[file[:-4]].fit(resampled_feature_train_x.iloc[:, :-1])
+            temp_data = resampled_feature_train_x.iloc[:, :-1]
+            df_x, df_y = temp_data.shape
+
+            aggregates = []
+
+            for i in range(df_y):
+                return_values = temp_data.iloc[:, i].apply([linear_fit, poly_fit, mcr], axis=0)
+                aggregates = aggregates + np.hstack(return_values.values).tolist()
+
+            aggregates = np.array([aggregates,]*len(temp_data))
+            temp_data = np.concatenate([temp_data.as_matrix(), aggregates], axis=1)
+            transformer[file[:-4]].fit(temp_data)
 
         for idx, date in enumerate(unique_dates):
             days_train_x = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, :-1]
+            df_x, df_y = days_train_x.shape
+
+            aggregates = []
+
+            for i in range(df_y):
+                return_values = days_train_x.iloc[:, i].apply([linear_fit, poly_fit, mcr], axis=0)
+                aggregates = aggregates + np.hstack(return_values.values).tolist()
+
+            aggregates = np.array([aggregates,]*720)
+
             days_train_y = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, -1]
             days_train_y = days_train_y.apply(adjust_stress_values)
-
             days_train_y.reset_index(drop=True, inplace=True)
             days_train_y_index_mask = days_train_y.notnull()
             days_train_y = days_train_y[days_train_y_index_mask]
             days_train_x = days_train_x.as_matrix()
+
+            days_train_x = np.concatenate([days_train_x, aggregates], axis=1)
+
+            # applying custom aggregate functions
             days_train_y_index_mask = days_train_y_index_mask.as_matrix()
-            #             print("Mask Shape:", days_train_y_index_mask.shape)
 
             # Normalize Days Training Data
             days_train_x = transformer[file[:-4]].transform(days_train_x)
@@ -107,7 +180,5 @@ for student in student_list:
         train_mask = np.stack(mask, axis=0)
         train_mask = train_mask.astype(int)
         train_y = np.array(y)
-
-        #         print("TrainX shape {}, Mask Shape {}".format(train_x.shape, train_mask.shape))
 
         np.savez("{}/{}/{}".format(data_dir, student, file[:-4]), input_seq=train_x, mask=train_mask, target=train_y)
