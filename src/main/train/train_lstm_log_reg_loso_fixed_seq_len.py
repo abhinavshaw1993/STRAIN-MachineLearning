@@ -13,7 +13,6 @@ from main.data_getter.get_lstm_log_reg_loso_fixed_inputs import get_inputs
 
 def train(student_list,
           feature_list,
-          start_epoch=0,
           epochs=10,
           resume_frm_chck_pt=True,
           force_save_model=False,
@@ -36,9 +35,11 @@ def train(student_list,
     print("######################################################")
 
     # Trains on all students in the data list.
-    print("################# FixedLen Seq Trained on ALl Students #################")
+    print("######## FixedLen Seq Trained on ALl Students ########")
 
     kfold_split = kfold.get_splits(data)
+
+    final_epoch_counter = []
 
     for counter, split in enumerate(kfold_split):
 
@@ -57,6 +58,8 @@ def train(student_list,
         best_score = Variable(torch.from_numpy(np.array([0])).float())
         file_name = ROOT_DIR + '/output/loso/loso_model_{}.tar'.format(counter)
 
+        print("Reading From File : ", file_name)
+
         if torch.cuda.device_count() > 1:
             print("Using {} GPUs".format(torch.cuda.device_count()))
             net = nn.DataParallel(net)
@@ -70,9 +73,11 @@ def train(student_list,
             model_state, optimizer_state, start_epoch, best_score = chck.load_checkpoint(file_name)
             net.load_state_dict(model_state)
             optimizer.load_state_dict(optimizer_state)
+        else:
+            start_epoch = 0
 
         if reset_optimizer_state:
-            optimizer = optim.Adam(net.parameters(), lr=0.001)
+            optimizer = optim.Adam(net.parameters(), lr=0.001, weight_decay=0.01)
 
         for epoch in range(epochs):
 
@@ -107,19 +112,25 @@ def train(student_list,
             if force_save_model:
                 is_best = True
 
-            # generating states. Saving checkpoint after every epoch.
-            state = chck.create_state(net, optimizer, epoch, start_epoch, best_score)
-            chck.save_checkpoint(state, is_best, full_file_name=file_name)
-
             print("=> loss of '{}' at epoch {} \n=> accuracy of \n {}".format(loss.data[0], start_epoch + epoch + 1,
                                                                               accuracy))
+            # generating states. Saving checkpoint after every epoch.
+            state = chck.create_state(net, optimizer, epoch, start_epoch + epoch, best_score)
+            chck.save_checkpoint(state, is_best, full_file_name=file_name)
 
+
+        # Reloading the model state to find out the which is the best epoch
+        model_state, optimizer_state, start_epoch, best_score = chck.load_checkpoint(file_name)
+        final_epoch_counter.append(start_epoch)
+
+        # Val Score for AVG Loso Val Score
         val_score.append(best_score)
 
     avg_score = sum(val_score) / len(val_score)
 
     print("######################################################")
     print("Loso CrossVal Score :", avg_score)
+    print("Final Epoch Counter :", final_epoch_counter)
     print("######################################################")
 
 
@@ -128,7 +139,6 @@ if __name__ == "__main__":
 
     train(student_list=config["student_list"],
           feature_list=config["feature_list"],
-          start_epoch=config["start_epoch"],
           epochs=config["epochs"],
           resume_frm_chck_pt=config["resume_frm_chck_pt"],
           force_save_model=config["force_save_model"],
