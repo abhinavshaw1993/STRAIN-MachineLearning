@@ -1,13 +1,24 @@
 start_epoch: 0
-epochs: 1000
+epochs: 600
 resume_frm_chck_pt: False
 force_save_model: False
 reset_optimizer_state: False
-restrict_seqlen: 10
+restrict_seqlen: -1
 train_model: True
 student_list:
   [
-      "student 1"
+
+    "student 1",
+    "student 2",
+    "student 12",
+    "student 15",
+    "student 24",
+    "student 27",
+    "student 30",
+    "student 35",
+    "student 42",
+    "student 52",
+
                   ]
 
 feature_list: [
