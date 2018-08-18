@@ -14,6 +14,7 @@ import math
 import pandas as pd
 import numpy as np
 
+model_aggregates = True
 
 # Agg functions
 
@@ -56,6 +57,8 @@ def fourier_transform(array_like):
     # Return Fast Fourier transfor of array.
     result = fft(array_like)
     return 0
+
+aggre_list = [linear_fit, poly_fit, mcr, "sum", "min", 'min', 'var', 'std']
 
 
 data_dir = ROOT_DIR + "/StudentLife Data"
@@ -128,41 +131,54 @@ for student in student_list:
         y = []
 
         if student == "student 1":
+
             # Set Stdev and mean for scalar.
             transformer[file[:-4]] = copy.deepcopy(StandardScaler())
             temp_data = resampled_feature_train_x.iloc[:, :-1]
             df_x, df_y = temp_data.shape
+            dow = pd.DataFrame(temp_data.index.dayofweek)
 
-            aggregates = []
+            # Model Aggregates if on.
+            if model_aggregates:
+                aggregates = []
 
-            for i in range(df_y):
-                return_values = temp_data.iloc[:, i].apply([linear_fit, poly_fit, mcr], axis=0)
-                aggregates = aggregates + np.hstack(return_values.values).tolist()
+                for i in range(df_y):
+                    return_values = temp_data.iloc[:, i].apply(aggre_list, axis=0)
+                    aggregates = aggregates + np.hstack(return_values.values).tolist()
 
-            aggregates = np.array([aggregates,]*len(temp_data))
-            temp_data = np.concatenate([temp_data.as_matrix(), aggregates], axis=1)
+                aggregates = np.array([aggregates,]*len(temp_data))
+                temp_data = np.concatenate([temp_data.as_matrix(), aggregates], axis=1)
+
+            date_converter = convert_to_date.today().weekday()
+            temp_data = np.concatenate([temp_data, dow], axis=1)
             transformer[file[:-4]].fit(temp_data)
 
         for idx, date in enumerate(unique_dates):
             days_train_x = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, :-1]
             df_x, df_y = days_train_x.shape
 
-            aggregates = []
+            if model_aggregates:
+                aggregates = []
 
-            for i in range(df_y):
-                return_values = days_train_x.iloc[:, i].apply([linear_fit, poly_fit, mcr], axis=0)
-                aggregates = aggregates + np.hstack(return_values.values).tolist()
+                for i in range(df_y):
+                    return_values = days_train_x.iloc[:, i].apply(aggre_list, axis=0)
+                    aggregates = aggregates + np.hstack(return_values.values).tolist()
 
-            aggregates = np.array([aggregates,]*720)
+                aggregates = np.array([aggregates, ]*720)
 
             days_train_y = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, -1]
             days_train_y = days_train_y.apply(adjust_stress_values)
             days_train_y.reset_index(drop=True, inplace=True)
             days_train_y_index_mask = days_train_y.notnull()
             days_train_y = days_train_y[days_train_y_index_mask]
+
             days_train_x = days_train_x.as_matrix()
 
-            days_train_x = np.concatenate([days_train_x, aggregates], axis=1)
+            if model_aggregates:
+                days_train_x = np.concatenate([days_train_x, aggregates], axis=1)
+
+            dow = np.full((720, 1), date.today().weekday())
+            days_train_x = np.concatenate([days_train_x, dow], axis=1)
 
             # applying custom aggregate functions
             days_train_y_index_mask = days_train_y_index_mask.as_matrix()
