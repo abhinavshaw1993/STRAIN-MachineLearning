@@ -58,7 +58,7 @@ def fourier_transform(array_like):
     result = fft(array_like)
     return 0
 
-aggre_list = [linear_fit, poly_fit, mcr, "sum", "min", 'min', 'var', 'std']
+aggre_list = [linear_fit, poly_fit, mcr]
 
 
 data_dir = ROOT_DIR + "/StudentLife Data"
