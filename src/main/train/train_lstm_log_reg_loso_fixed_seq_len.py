@@ -137,6 +137,9 @@ def train(student_list,
 if __name__ == "__main__":
     config = read_config("loso_config.yml")
 
+    if config['process_data']:
+        import main.data_processor.GenerateFixedSeqNumpy
+
     train(student_list=config["student_list"],
           feature_list=config["feature_list"],
           epochs=config["epochs"],

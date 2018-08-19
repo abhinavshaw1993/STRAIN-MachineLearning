@@ -2,17 +2,24 @@ from datetime import timedelta
 from datetime import date as convert_to_date
 from sklearn.preprocessing import StandardScaler
 from main.definition import ROOT_DIR
+from main.utils.read_config import read_config
 import os
-import main.data_processor.agg_utils as  agg_func
 import copy
+import main.data_processor.agg_utils as agg_func
 import pandas as pd
 import numpy as np
 
-resample_freq_min = 2
-print("Data points per sequence: ", int(24*60/resample_freq_min))
+config = read_config("loso_config.yml")
 
-model_aggregates = True
-aggre_list = [agg_func.linear_fit, agg_func.poly_fit, agg_func.mcr]
+resample_freq_min = config["resample_freq_mins"]
+model_aggregates = config["model_aggregates"]
+agg_func_list = [agg_func.linear_fit, agg_func.poly_fit, agg_func.mcr]
+
+print(" Resample Freq: {} Data points per sequence: {} Model Aggregates: {} Aggregate Functions".format(resample_freq_min,
+                                                                                                        int(24*60/resample_freq_min),
+                                                                                                        model_aggregates,
+                                                                                                        agg_func_list))
+
 data_dir = ROOT_DIR + "/StudentLife Data"
 student_list = os.listdir(data_dir)
 student_list = [_ for _ in student_list if "student" in _]
@@ -79,7 +86,7 @@ for student in student_list:
                 aggregates = []
 
                 for i in range(df_y):
-                    return_values = temp_data.iloc[:, i].apply(aggre_list, axis=0)
+                    return_values = temp_data.iloc[:, i].apply(agg_func_list, axis=0)
                     aggregates = aggregates + np.hstack(return_values.values).tolist()
 
                 aggregates = np.array([aggregates,]*len(temp_data))
@@ -97,7 +104,7 @@ for student in student_list:
                 aggregates = []
 
                 for i in range(df_y):
-                    return_values = days_train_x.iloc[:, i].apply(aggre_list, axis=0)
+                    return_values = days_train_x.iloc[:, i].apply(agg_func_list, axis=0)
                     aggregates = aggregates + np.hstack(return_values.values).tolist()
 
                 aggregates = np.array([aggregates, ]*int(24*60/resample_freq_min))

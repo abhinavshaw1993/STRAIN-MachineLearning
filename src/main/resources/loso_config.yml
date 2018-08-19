@@ -1,5 +1,11 @@
+## Data Processing ##
+process_data: True
+model_aggregates: True
+resample_freq_mins: 2
+
+## Model Configs ##
 start_epoch: 0
-epochs: 600
+epochs: 1
 resume_frm_chck_pt: False
 force_save_model: False
 reset_optimizer_state: False
