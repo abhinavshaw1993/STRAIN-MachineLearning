@@ -1,87 +1,23 @@
-import os
 from datetime import timedelta
 from datetime import date as convert_to_date
 from sklearn.preprocessing import StandardScaler
 from main.definition import ROOT_DIR
-import scipy
+import os
+import main.data_processor.agg_utils as  agg_func
 import copy
-
-# imports for aggregations functions
-
-from scipy.stats import iqr as quartile_range
-from scipy.fftpack import fft
-import math
 import pandas as pd
 import numpy as np
 
+resample_freq_min = 2
+print("Data points per sequence: ", int(24*60/resample_freq_min))
+
 model_aggregates = True
-
-# Agg functions
-
-# For slope of time series
-def linear_fit(array_like):
-    # Linear features
-    if (len(array_like) == 0):
-        return [0, 0]
-    p = np.polyfit(np.arange(len(array_like)), array_like, 1)
-    return [p[0], p[1]]
-
-
-def poly_fit(array_like):
-    # Poly features
-    if (len(array_like) == 0):
-        return [0, 0, 0]
-    p = np.polyfit(np.arange(len(array_like)), array_like, 2)
-    return [p[0], p[1], p[2]]
-
-
-def iqr(array_like):
-    # inter quartile range.
-    result = quartile_range(array_like)
-    return result if not math.isnan(result) else 0
-
-
-def kurt(array_like):
-    result = scipy.stats.kurtosis(array_like)
-    return result if not math.isnan(result) else 0
-
-
-def mcr(array_like):
-    # returns how many times the mean has been crossed.
-    mean = np.mean(array_like)
-    array_like = array_like - mean
-    return np.sum(np.diff(np.sign(array_like)).astype(bool))
-
-
-def fourier_transform(array_like):
-    # Return Fast Fourier transfor of array.
-    result = fft(array_like)
-    return 0
-
-aggre_list = [linear_fit, poly_fit, mcr]
-
-
+aggre_list = [agg_func.linear_fit, agg_func.poly_fit, agg_func.mcr]
 data_dir = ROOT_DIR + "/StudentLife Data"
 student_list = os.listdir(data_dir)
-
 student_list = [_ for _ in student_list if "student" in _]
 
-
-def adjust_stress_values(stress_level):
-    mapping = {
-        1: 2,
-        2: 3,
-        3: 4,
-        4: 1,
-        5: 0
-    }
-
-    try:
-        return mapping[stress_level]
-    except KeyError:
-        return None
-
-
+# Making Sure Student 1 is first in the list.
 student_list.remove("student 1")
 student_list.insert(0, "student 1")
 transformer = {}
@@ -103,7 +39,7 @@ for student in student_list:
                                       index_col=1
                                       )
         feature_train_x = feature_train_x.iloc[:, 1:]
-        resampled_feature_train_x = feature_train_x.resample('2T').max()
+        resampled_feature_train_x = feature_train_x.resample('{}T'.format(resample_freq_min)).max()
         resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method="ffill")
 
         # Parse Min and Max Date, Convert them to string.
@@ -115,12 +51,12 @@ for student in student_list:
         start_date = convert_to_date(start_date.year, start_date.month, start_date.day)
         end_date = convert_to_date(end_date.year, end_date.month, end_date.day) + timedelta(days=1)
 
-        ix = pd.date_range(start=start_date, end=end_date, freq='2T')
+        ix = pd.date_range(start=start_date, end=end_date, freq='{}T'.format(resample_freq_min))
         resampled_feature_train_x = resampled_feature_train_x.reindex(ix).iloc[:-1, 1:]
 
         # Filling NA Values.
-        resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='ffill')
-        resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='bfill')
+        # resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(method='ffill')
+        resampled_feature_train_x.iloc[:, :-1] = resampled_feature_train_x.iloc[:, :-1].fillna(value=-10)
 
         # print("Type: ", type(resampled_feature_train_x.index.map(lambda t: t.date())))
 
@@ -164,10 +100,10 @@ for student in student_list:
                     return_values = days_train_x.iloc[:, i].apply(aggre_list, axis=0)
                     aggregates = aggregates + np.hstack(return_values.values).tolist()
 
-                aggregates = np.array([aggregates, ]*720)
+                aggregates = np.array([aggregates, ]*int(24*60/resample_freq_min))
 
             days_train_y = resampled_feature_train_x.loc[str(date): str(date)].iloc[:, -1]
-            days_train_y = days_train_y.apply(adjust_stress_values)
+            days_train_y = days_train_y.apply(agg_func.adjust_stress_values)
             days_train_y.reset_index(drop=True, inplace=True)
             days_train_y_index_mask = days_train_y.notnull()
             days_train_y = days_train_y[days_train_y_index_mask]
@@ -177,7 +113,7 @@ for student in student_list:
             if model_aggregates:
                 days_train_x = np.concatenate([days_train_x, aggregates], axis=1)
 
-            dow = np.full((720, 1), date.today().weekday())
+            dow = np.full((int(24*60/resample_freq_min), 1), date.today().weekday())
             days_train_x = np.concatenate([days_train_x, dow], axis=1)
 
             # applying custom aggregate functions
